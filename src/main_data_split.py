@@ -173,7 +173,6 @@ def run(args):
     t0 = time()
     te_size = split_size( args['te_size'] )
     n_splits = int( args['n_splits'] )
-    # args['datapath'] = str(Path(args['datapath']).absolute())
     args['datapath'] = Path( args['datapath'] ).resolve()
     datapath = args['datapath']
 
@@ -198,14 +197,10 @@ def run(args):
     if args['gout'] is not None:
         gout = Path( args['gout'] ).resolve()
     else:
-        # split_str_on_sep = str( datapath ).split('/data/')
-        # dir1 = split_str_on_sep[0] + '/trn'
-        # dir2 = Path( split_str_on_sep[1] ).with_suffix('')
-        # gout = Path(dir1, dir2, 'splits')
         # TODO: useful for drug response
         # sufx = 'none' if split_on is None else split_on
         # gout = gout / f'split_on_{sufx}'
-        gout = Path( str( datapath.with_suffix('') ) + '.splits' )
+        gout = datapath.with_suffix('.splits')
     
     outfigs = gout / 'outfigs'
     os.makedirs(gout, exist_ok=True)

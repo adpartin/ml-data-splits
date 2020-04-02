@@ -1,6 +1,9 @@
 """
 A batch prcoessing code that calls main_data_split.py with the same set of parameters
 but different datasets.
+
+Example:
+python src/batch_data_split.py --datadir data/docking_data_march_30 --par_jobs 32 --ml_task cls -t cls --n_splits 100
 """
 import warnings
 warnings.filterwarnings('ignore')
@@ -19,10 +22,9 @@ import main_data_split
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-dd', '--datadir', required=True, default=None, type=str,
-                help='Data dir where data files are stored (default: None).')
+                    help='Data dir where data files are stored (default: None).')
 parser.add_argument('--par_jobs', default=1, type=int, 
                     help=f'Number of joblib parallel jobs (default: 1).')
-# args, other_args = parser.parse_known_args(args)
 args, other_args = parser.parse_known_args()
 
 # Number of parallel jobs
@@ -39,16 +41,13 @@ def gen_splits(dfile, *args):
 # Main execution
 t0 = time()
 if par_jobs > 1:
-    # https://joblib.readthedocs.io/en/latest/parallel.html
     results = Parallel(n_jobs=par_jobs, verbose=1)(
             delayed(gen_splits)(dfile, *other_args) for dfile in dfiles )
 else:
     for i, dfile in enumerate(dfiles):
         print('Processing file', dfile)
-        # main_data_split.main([ '--datapath', str(dfile), *other_args ]) 
         gen_splits(dfile, *other_args)
     
 t_end = time() - t0
+print('Runtime: {:.2f} mins'.format( t_end/60 ))
 
-
-# python batch_data_split.py -dd data.gdsc.dsc.rna.raw/  --split_on cell
