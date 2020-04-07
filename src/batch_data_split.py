@@ -1,9 +1,10 @@
 """
 A batch prcoessing code that calls main_data_split.py with the same set of parameters
-but different datasets.
+but different datasets. It generates multiple splits of train/val/test sets and dumps
+into respective dirs.
 
 Example:
-python src/batch_data_split.py --datadir data/docking_data_march_30 --par_jobs 32 --ml_task cls -t cls --n_splits 100
+python src/batch_data_split.py --datadir data/docking_data_march_30 --par_jobs 32 --ml_task cls -t cls --n_splits 100 --gout data/docking_data_march_30
 """
 import warnings
 warnings.filterwarnings('ignore')
@@ -32,7 +33,8 @@ par_jobs = int( args.par_jobs )
 assert par_jobs > 0, f"The arg 'par_jobs' must be at least 1 (got {par_jobs})"
 
 # Data file names
-dfiles = glob( str(Path(args.datadir, 'ml.*.parquet')) )
+fname_pattern = 'ml.*.parquet'
+dfiles = glob( str(Path(args.datadir, fname_pattern)) )
 
 # Main func designed primarily for joblib Parallel
 def gen_splits(dfile, *args):
@@ -50,4 +52,5 @@ else:
     
 t_end = time() - t0
 print('Runtime: {:.2f} mins'.format( t_end/60 ))
+
 

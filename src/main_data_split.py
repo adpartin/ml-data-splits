@@ -58,8 +58,6 @@ def parse_args(args):
                         help='Target column name (required when stratify) (default: None).')
  
     parser.add_argument('--n_jobs', default=8,  type=int, help='Default: 8.')
-
-    # Parse args and run
     args, other_args = parser.parse_known_args(args)
     return args
 
@@ -79,7 +77,7 @@ def run(args):
 
     # Specify ML task (regression or classification)
     if cv_method=='strat':
-        mltype = 'cls'  # force mltype to cls in case of stratification
+        mltype = 'cls'  # cast mltype to cls in case of stratification
     else:
         mltype = args['ml_task']  
 
@@ -91,6 +89,7 @@ def run(args):
     # -----------------------------------------------
     if args['gout'] is not None:
         gout = Path( args['gout'] ).resolve()
+        gout = gout / datapath.with_suffix('.splits').name
     else:
         # Note! useful for drug response
         # sufx = 'none' if split_on is None else split_on
@@ -108,7 +107,7 @@ def run(args):
     print_fn = get_print_func(lg.logger)
     print_fn(f'File path: {filepath}')
     print_fn(f'\n{pformat(args)}')
-    dump_dict(args, outpath=gout/'data.splitter.args.txt') # dump args.
+    dump_dict(args, outpath=gout/'data.splitter.args.txt') # dump args
     
     # -----------------------------------------------
     #       Load data
