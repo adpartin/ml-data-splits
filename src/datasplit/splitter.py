@@ -19,15 +19,14 @@ from sklearn.model_selection import ShuffleSplit, KFold
 from sklearn.model_selection import GroupShuffleSplit, GroupKFold
 from sklearn.model_selection import StratifiedShuffleSplit, StratifiedKFold
 
+from utils.plots import plot_hist
 
-# def data_splitter(data, n_splits=1, cv_method='simple', te_method='simple',
-#                   te_size=0.1, mltype='reg', gout=None,
-#                   outfigs=Path('./'), split_on=None, ydata=None, trg_name=None,
-#                   print_fn=print):
+
 def data_splitter( n_splits=1, gout=None, outfigs=None, ydata=None, 
                    print_fn=print, **kwargs):
     """
-    This func calls get_single_splits() n_splits times to generate multiple train/val/test splits.
+    This func calls get_single_splits() a total of n_splits times to generate
+    multiple train/val/test splits.
     Args:
         n_splits : number of splits
         gout : global outdir to dump the splits
@@ -37,34 +36,25 @@ def data_splitter( n_splits=1, gout=None, outfigs=None, ydata=None,
         print_fn : print function
     """
     seeds = np.random.choice(n_splits, n_splits, replace=False)
-    # for seed in range( n_splits ):
+
     for i, seed in enumerate( seeds ):
         tr_id, vl_id, te_id = gen_single_split(ydata=ydata, seed=seed, **kwargs)
 
         # digits = len(str(n_splits))
-        ## seed_str = str(seed) # f"{seed}".zfill(digits)
         seed_str = str(i) # f"{seed}".zfill(digits)
         output = '1fold_s' + seed_str 
         
-        # Dump tr, vl, te indices
         if gout is not None:
             np.savetxt( gout/f'{output}_tr_id.csv', tr_id.reshape(-1,1), fmt='%d', delimiter='', newline='\n' )
             np.savetxt( gout/f'{output}_vl_id.csv', vl_id.reshape(-1,1), fmt='%d', delimiter='', newline='\n' )
             np.savetxt( gout/f'{output}_te_id.csv', te_id.reshape(-1,1), fmt='%d', delimiter='', newline='\n' )
         
-        # if trg_name in data.columns:
-        #     plot_hist(data.loc[tr_id, trg_name], title=f'Train Set; Histogram; {trg_name}',
-        #               fit=None, bins=100, path=outfigs/f'{output}_AUC_hist_train.png')
-        #     plot_hist(data.loc[vl_id, trg_name], title=f'Val Set; Histogram; {trg_name}',
-        #               fit=None, bins=100, path=outfigs/f'{output}_AUC_hist_val.png')
-        #     plot_hist(data.loc[te_id, trg_name], title=f'Test Set; Histogram; {trg_name}',
-        #               fit=None, bins=100, path=outfigs/f'{output}_AUC_hist_test.png')
         if ydata is not None:
-            plot_hist(ydata, title=f'Train Set; Histogram;',
+            plot_hist(ydata, title=f'Train Set Histogram',
                       fit=None, bins=100, path=outfigs/f'{output}_y_hist_train.png')
-            plot_hist(ydata, title=f'Val Set; Histogram;',
+            plot_hist(ydata, title=f'Val Set Histogram',
                       fit=None, bins=100, path=outfigs/f'{output}_y_hist_val.png')
-            plot_hist(ydata, title=f'Test Set; Histogram;',
+            plot_hist(ydata, title=f'Test Set Histogram',
                       fit=None, bins=100, path=outfigs/f'{output}_y_hist_test.png')
     return None
 
@@ -193,12 +183,12 @@ def cv_splitter(cv_method: str='simple', cv_folds: int=1, test_size: float=0.2,
 
 def print_intersect_on_var(df, tr_id, vl_id, te_id, grp_col='CELL', print_fn=print):
     """ Print intersection between train, val, and test datasets with respect
-    to grp_col column if provided. df is usually metadata.
+    to grp_col column if provided. df is usually a metadata.
     """
     if grp_col in df.columns:
-        tr_grp_unq = set(df.loc[tr_id, grp_col])
-        vl_grp_unq = set(df.loc[vl_id, grp_col])
-        te_grp_unq = set(df.loc[te_id, grp_col])
+        tr_grp_unq = set( df.loc[tr_id, grp_col] )
+        vl_grp_unq = set( df.loc[vl_id, grp_col] )
+        te_grp_unq = set( df.loc[te_id, grp_col] )
         print_fn(f'\tTotal intersects on {grp_col} btw tr and vl: {len(tr_grp_unq.intersection(vl_grp_unq))}')
         print_fn(f'\tTotal intersects on {grp_col} btw tr and te: {len(tr_grp_unq.intersection(te_grp_unq))}')
         print_fn(f'\tTotal intersects on {grp_col} btw vl and te: {len(vl_grp_unq.intersection(te_grp_unq))}')
@@ -229,4 +219,5 @@ def plot_ytr_yvl_dist(ytr, yvl, title=None, outpath='.'):
         plt.savefig(Path(outpath)/'ytr_yvl_dist.png', bbox_inches='tight')
     else:
         plt.savefig(outpath, bbox_inches='tight')
+
 

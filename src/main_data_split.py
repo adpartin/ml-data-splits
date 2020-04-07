@@ -28,7 +28,6 @@ filepath = Path(__file__).resolve().parent
 
 # Utils
 from utils.classlogger import Logger
-# from datasplit.cv_splitter import data_splitter, # cv_splitter
 from datasplit.splitter import data_splitter # cv_splitter
 from utils.plots import plot_hist
 from utils.utils import load_data, dump_dict, get_print_func
@@ -65,112 +64,11 @@ def parse_args(args):
     return args
 
 
-# def split_size(x):
-#     """ Split size can be float (0, 1) or int (casts value as needed). """
-#     assert x > 0, 'Split size must be greater than 0.'
-#     return int(x) if x > 1.0 else x
-
-
-# def print_intersect_on_var(df, tr_id, vl_id, te_id, grp_col='CELL', print_fn=print):
-#     """ Print intersection between train, val, and test datasets with respect
-#     to grp_col column if provided. df is usually metadata.
-#     """
-#     if grp_col in df.columns:
-#         tr_grp_unq = set(df.loc[tr_id, grp_col])
-#         vl_grp_unq = set(df.loc[vl_id, grp_col])
-#         te_grp_unq = set(df.loc[te_id, grp_col])
-#         print_fn(f'\tTotal intersects on {grp_col} btw tr and vl: {len(tr_grp_unq.intersection(vl_grp_unq))}')
-#         print_fn(f'\tTotal intersects on {grp_col} btw tr and te: {len(tr_grp_unq.intersection(te_grp_unq))}')
-#         print_fn(f'\tTotal intersects on {grp_col} btw vl and te: {len(vl_grp_unq.intersection(te_grp_unq))}')
-#         print_fn(f'\tUnique {grp_col} in tr: {len(tr_grp_unq)}')
-#         print_fn(f'\tUnique {grp_col} in vl: {len(vl_grp_unq)}')
-#         print_fn(f'\tUnique {grp_col} in te: {len(te_grp_unq)}')    
-#     else:
-#         raise(f'The column {grp_col} was not found!')
-
-    
-# def data_splitter(data, cv_method='simple', te_method='simple',
-#                   n_splits=10, te_size=0.1, mltype='reg', gout=Path('./'),
-#                   outfigs=Path('./'), split_on=None, ydata=None, trg_name=None,
-#                   print_fn=print):
-#     # TODO: put the spltting subroutine into function
-#     for seed in range( n_splits ):
-#         # digits = len(str(n_splits))
-#         seed_str = str(seed) # f"{seed}".zfill(digits)
-#         output = '1fold_s' + seed_str 
-
-#         # Note that we don't shuffle the original dataset, but rather
-#         # create a vector array of representative indices.
-#         np.random.seed( seed )
-#         idx_vec = np.random.permutation( data.shape[0] )
-#         y_vec = ydata.values[idx_vec]
-        
-#         # Create splitter that splits the full dataset into tr and te
-#         te_folds = int(1/te_size)
-#         te_splitter = cv_splitter(cv_method=te_method, cv_folds=te_folds, test_size=None,
-#                                   mltype=mltype, shuffle=False, random_state=seed)
-        
-#         te_grp = None if split_on is None else data[split_on].values[idx_vec]
-#         if is_string_dtype(te_grp): te_grp = LabelEncoder().fit_transform(te_grp)
-        
-#         # Split tr into tr and te
-#         tr_id, te_id = next(te_splitter.split(X=idx_vec, y=y_vec, groups=te_grp))
-#         tr_id = idx_vec[tr_id] # adjust the indices! we'll split the remaining tr into tr and vl
-#         te_id = idx_vec[te_id] # adjust the indices!
-
-#         # Update a vector array that excludes the test indices
-#         idx_vec_ = tr_id; del tr_id
-#         y_vec_ = ydata.values[idx_vec_]
-
-#         # Define vl_size while considering the new full size of the available samples
-#         vl_size = te_size / (1 - te_size)
-#         cv_folds = int(1/vl_size)
-
-#         # Create splitter that splits tr into tr and vl
-#         cv = cv_splitter(cv_method=cv_method, cv_folds=cv_folds, test_size=None,
-#                          mltype=mltype, shuffle=False, random_state=seed)    
-        
-#         cv_grp = None if split_on is None else data[split_on].values[idx_vec_]
-#         if is_string_dtype(cv_grp): cv_grp = LabelEncoder().fit_transform(cv_grp)
-        
-#         # Split tr into tr and vl
-#         tr_id, vl_id = next(cv.split(X=idx_vec_, y=y_vec_, groups=cv_grp))
-#         tr_id = idx_vec_[tr_id] # adjust the indices!
-#         vl_id = idx_vec_[vl_id] # adjust the indices!
-        
-#         # Dump tr, vl, te indices
-#         np.savetxt(gout/f'{output}_tr_id.csv', tr_id.reshape(-1,1), fmt='%d', delimiter='', newline='\n')
-#         np.savetxt(gout/f'{output}_vl_id.csv', vl_id.reshape(-1,1), fmt='%d', delimiter='', newline='\n')
-#         np.savetxt(gout/f'{output}_te_id.csv', te_id.reshape(-1,1), fmt='%d', delimiter='', newline='\n')
-        
-#         # Check that indices do not overlap
-#         assert len( set(tr_id).intersection(set(vl_id)) ) == 0, 'Overlapping indices btw tr and vl'
-#         assert len( set(tr_id).intersection(set(te_id)) ) == 0, 'Overlapping indices btw tr and te'
-#         assert len( set(vl_id).intersection(set(te_id)) ) == 0, 'Overlapping indices btw tr and vl'
-        
-#         print_fn('Train samples {} ({:.2f}%)'.format( len(tr_id), 100*len(tr_id)/data.shape[0] ))
-#         print_fn('Val   samples {} ({:.2f}%)'.format( len(vl_id), 100*len(vl_id)/data.shape[0] ))
-#         print_fn('Test  samples {} ({:.2f}%)'.format( len(te_id), 100*len(te_id)/data.shape[0] ))
-        
-#         # Confirm that group splits are correct (no intersect)
-#         if split_on is not None:
-#             print_intersect_on_var(data, tr_id=tr_id, vl_id=vl_id, te_id=te_id, grp_col=split_on, print_fn=print_fn)
-
-#         if trg_name in data.columns:
-#             plot_hist(data.loc[tr_id, trg_name], title=f'Train Set; Histogram; {trg_name}',
-#                       fit=None, bins=100, path=outfigs/f'{output}_AUC_hist_train.png')
-#             plot_hist(data.loc[vl_id, trg_name], title=f'Val Set; Histogram; {trg_name}',
-#                       fit=None, bins=100, path=outfigs/f'{output}_AUC_hist_val.png')
-#             plot_hist(data.loc[te_id, trg_name], title=f'Test Set; Histogram; {trg_name}',
-#                       fit=None, bins=100, path=outfigs/f'{output}_AUC_hist_test.png')
-#     return None
-
-
 def run(args):
     t0 = time()
+    n_splits = int( args['n_splits'] )
     ## te_size = split_size( args['te_size'] )
     te_size = args['te_size']
-    n_splits = int( args['n_splits'] )
     args['datapath'] = Path( args['datapath'] ).resolve()
     datapath = args['datapath']
 
@@ -233,13 +131,9 @@ def run(args):
     print_fn('Split into hold-out train/val/test')
     print_fn('{}'.format('-'*50))
 
-    # data_splitter(data=data, cv_method=cv_method, te_method=te_method,
-    #               n_splits=n_splits, te_size=te_size, mltype=mltype,
-    #               gout=gout, outfigs=outfigs, split_on=split_on,
-    #               ydata=ydata, # trg_name=trg_name,
-    #               print_fn=print_fn)
     kwargs = {'data': data, 'cv_method': cv_method, 'te_method': te_method,
               'te_size': te_size, 'mltype': mltype, 'split_on': split_on}
+
     data_splitter(n_splits=n_splits, gout=gout, outfigs=outfigs, ydata=ydata,
                   print_fn=print_fn, **kwargs)
 
