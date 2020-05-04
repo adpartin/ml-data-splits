@@ -11,17 +11,10 @@ import sys
 from pathlib import Path
 import argparse
 from time import time
-from pprint import pprint, pformat
-
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+from pprint import pformat
 
 import numpy as np
 import pandas as pd
-
-from pandas.api.types import is_string_dtype
-from sklearn.preprocessing import LabelEncoder
 
 # File path
 filepath = Path(__file__).resolve().parent
@@ -34,30 +27,25 @@ from utils.utils import load_data, dump_dict, get_print_func
 
 
 def parse_args(args):
-    parser = argparse.ArgumentParser(description='Generate and save train/val/test data splits.')
-
+    parser = argparse.ArgumentParser(description='Create and save train/val/test splits.')
     parser.add_argument('-dp', '--datapath', required=True, default=None, type=str,
                         help='Full path to the data (default: None).')
     parser.add_argument('--gout', default=None, type=str,
                         help='Global outdir to dump the splits.')
-    
-    parser.add_argument('-ns', '--n_splits', type=int, default=5, help='Number of splits to generate (default: 5).')
-
+    parser.add_argument('-ns', '--n_splits', type=int, default=5,
+                        help='Number of splits to generate (default: 5).')
     # parser.add_argument('-tem', '--te_method', default='simple', choices=['simple', 'group', 'strat'],
     #                     help='Test split method (default: simple).')
     parser.add_argument('-cvm', '--cv_method', default='simple', choices=['simple', 'group', 'strat'],
                         help='Cross-val split method (default: simple).')
-    parser.add_argument('--te_size', type=float, default=0.1, help='Test size split ratio (default: 0.1).')
+    parser.add_argument('--te_size', type=float, default=0.1,
+                        help='Test size split ratio (default: 0.1).')
     # parser.add_argument('--vl_size', type=float, default=0.1, help='Val size split ratio for single split (default: 0.1).')
-
     parser.add_argument('--split_on', type=str, default=None, choices=['cell', 'drug'],
                         help='Specify which variable (column) to make a hard split on (default: None).')
-
     parser.add_argument('--ml_task', type=str, default='reg', choices=['reg', 'cls'], help='ML task (default: reg).')
     parser.add_argument('-t', '--trg_name', type=str, default=None,
                         help='Target column name (required when stratify) (default: None).')
- 
-    parser.add_argument('--n_jobs', default=8,  type=int, help='Default: 8.')
     args, other_args = parser.parse_known_args(args)
     return args
 
@@ -89,14 +77,14 @@ def run(args):
     # -----------------------------------------------
     if args['gout'] is not None:
         gout = Path( args['gout'] ).resolve()
-        gout = gout / datapath.with_suffix('.splits').name
+        gout = gout/datapath.with_suffix('.splits').name
     else:
         # Note! useful for drug response
         # sufx = 'none' if split_on is None else split_on
         # gout = gout / f'split_on_{sufx}'
         gout = datapath.with_suffix('.splits')
     
-    outfigs = gout / 'outfigs'
+    outfigs = gout/'outfigs'
     os.makedirs(gout, exist_ok=True)
     os.makedirs(outfigs, exist_ok=True)
 

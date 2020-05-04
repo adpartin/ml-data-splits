@@ -56,9 +56,9 @@ def data_splitter( n_splits=1, gout=None, outfigs=None, ydata=None,
         output = '1fold_s' + seed_str 
         
         if gout is not None:
-            np.savetxt( gout/f'{output}_tr_id.csv', tr_id.reshape(-1,1), fmt='%d', delimiter='', newline='\n' )
-            np.savetxt( gout/f'{output}_vl_id.csv', vl_id.reshape(-1,1), fmt='%d', delimiter='', newline='\n' )
-            np.savetxt( gout/f'{output}_te_id.csv', te_id.reshape(-1,1), fmt='%d', delimiter='', newline='\n' )
+            np.savetxt(gout/f'{output}_tr_id.csv', tr_id.reshape(-1,1), fmt='%d', delimiter='', newline='\n')
+            np.savetxt(gout/f'{output}_vl_id.csv', vl_id.reshape(-1,1), fmt='%d', delimiter='', newline='\n')
+            np.savetxt(gout/f'{output}_te_id.csv', te_id.reshape(-1,1), fmt='%d', delimiter='', newline='\n')
         
         if (ydata is not None) and (outfigs is not None):
             plot_hist(ydata, title=f'Train Set Histogram',
@@ -89,7 +89,7 @@ def gen_single_split( data, te_method='simple', cv_method='simple', te_size=0.1,
     """
     np.random.seed( seed )
     idx_vec = np.random.permutation( data.shape[0] )
-    y_vec = ydata.values[idx_vec]
+    y_vec = ydata.values[idx_vec] if ydata is not None else None
     
     # Create splitter that splits the full dataset into tr and te
     te_folds = int(1/te_size)
@@ -106,7 +106,7 @@ def gen_single_split( data, te_method='simple', cv_method='simple', te_size=0.1,
 
     # Update a vector array that excludes the test indices
     idx_vec_ = tr_id; del tr_id
-    y_vec_ = ydata.values[idx_vec_]
+    y_vec_ = ydata.values[idx_vec_] if ydata is not None else None
 
     # Define vl_size while considering the new full size of the available samples
     vl_size = te_size / (1 - te_size)
