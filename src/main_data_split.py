@@ -1,8 +1,6 @@
 """
 This code generates multiple splits of train/val/test sets.
 """
-from __future__ import print_function, division
-
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -13,37 +11,57 @@ import argparse
 from time import time
 from pprint import pformat
 
-# File path
-filepath = Path(__file__).resolve().parent
-
 # Utils
 from utils.classlogger import Logger
 from datasplit.splitter import data_splitter  # cv_splitter
 from utils.plots import plot_hist
 from utils.utils import load_data, dump_dict, get_print_func
 
+# File path
+filepath = Path(__file__).resolve().parent
 
 def parse_args(args):
-    parser = argparse.ArgumentParser(description='Create and save train/val/test splits.')
-    parser.add_argument('-dp', '--datapath', required=True, default=None, type=str,
+    parser = argparse.ArgumentParser(description='Dump train/val/test splits.')
+
+    parser.add_argument('-dp', '--datapath',
+                        required=True,
+                        default=None,
+                        type=str,
                         help='Full path to the data (default: None).')
-    parser.add_argument('--gout', default=None, type=str,
+    parser.add_argument('--gout',
+                        default=None,
+                        type=str,
                         help='Global outdir to dump the splits.')
-    parser.add_argument('-ns', '--n_splits', type=int, default=5,
+    parser.add_argument('-ns', '--n_splits',
+                        default=5,
+                        type=int,
                         help='Number of splits to generate (default: 5).')
     # parser.add_argument('-tem', '--te_method', default='simple', choices=['simple', 'group', 'strat'],
     #                     help='Test split method (default: simple).')
-    parser.add_argument('-cvm', '--cv_method', default='simple', choices=['simple', 'group', 'strat'],
+    parser.add_argument('-cvm', '--cv_method',
+                        default='simple',
+                        choices=['simple', 'group', 'strat'],
                         help='Cross-val split method (default: simple).')
-    parser.add_argument('--te_size', default=0.1,
+    parser.add_argument('--te_size',
+                        default=0.1,
                         help='Test size split (ratio or absolute number) (default: 0.1).')
     # parser.add_argument('--vl_size', type=float, default=0.1, help='Val size split ratio for single split (default: 0.1).')
-    parser.add_argument('--split_on', type=str, default=None, choices=['cell', 'drug'],
+    parser.add_argument('--split_on',
+                        type=str,
+                        default=None,
+                        choices=['cell', 'drug'],
                         help='Specify which variable (column) to make a hard split on (default: None).')
-    parser.add_argument('--ml_task', type=str, default='reg', choices=['reg', 'cls'], help='ML task (default: reg).')
-    parser.add_argument('-t', '--trg_name', type=str, default=None,
+    parser.add_argument('--ml_task',
+                        type=str,
+                        default='reg',
+                        choices=['reg', 'cls'],
+                        help='ML task (default: reg).')
+    parser.add_argument('-t', '--trg_name',
+                        default=None,
+                        type=str,
                         help='Target column name (required when stratify) (default: None).')
-    args, other_args = parser.parse_known_args(args)
+
+    args = parser.parse_args(args)
     return args
 
 
@@ -58,31 +76,30 @@ def verify_size(s):
 
 def run(args):
     t0 = time()
-    n_splits = int( args['n_splits'] )
-    te_size = verify_size( args['te_size'] )
+    n_splits = int(args.n_splits)
+    te_size = verify_size(args.te_size)
     # te_size = args['te_size']
-    args['datapath'] = Path( args['datapath'] ).resolve()
-    datapath = args['datapath']
+    datapath = Path(args.datapath).resolve()
 
     # Hard split
-    split_on = None if args['split_on'] is None else args['split_on'].upper()
-    cv_method = args['cv_method']
+    split_on = None if args.split_on is None else args.split_on.upper()
+    cv_method = args.cv_method
     te_method = cv_method
 
     # Specify ML task (regression or classification)
     if cv_method == 'strat':
         mltype = 'cls'  # cast mltype to cls in case of stratification
     else:
-        mltype = args['ml_task']
+        mltype = args.ml_task
 
     # Target column name
-    trg_name = str( args['trg_name'] )
+    trg_name = str(args.trg_name)
 
     # -----------------------------------------------
     #       Create outdir
     # -----------------------------------------------
-    if args['gout'] is not None:
-        gout = Path( args['gout'] ).resolve()
+    if args.gout is not None:
+        gout = Path(args.gout).resolve()
         gout = gout/datapath.with_suffix('.splits').name
     else:
         # Note! useful for drug response
@@ -100,14 +117,14 @@ def run(args):
     lg = Logger(gout/'data.splitter.log')
     print_fn = get_print_func(lg.logger)
     print_fn(f'File path: {filepath}')
-    print_fn(f'\n{pformat(args)}')
-    dump_dict(args, outpath=gout/'data.splitter.args.txt')  # dump args
+    print_fn(f'\n{pformat(vars(args))}')
+    dump_dict(vars(args), outpath=gout/'data.splitter.args.txt')  # dump args
 
     # -----------------------------------------------
     #       Load data
     # -----------------------------------------------
     print_fn('\nLoad master dataset.')
-    data = load_data( datapath )
+    data = load_data(datapath)
     print_fn('data.shape {}'.format(data.shape))
     print_fn('Total mod: {}'.format( len([c for c in data.columns if 'mod.' in c]) ))
 
@@ -121,9 +138,9 @@ def run(args):
     # -----------------------------------------------
     #       Generate splits (train/val/test)
     # -----------------------------------------------
-    print_fn('\n{}'.format('-'*50))
+    print_fn('\n{}'.format('-' * 50))
     print_fn('Split into hold-out train/val/test')
-    print_fn('{}'.format('-'*50))
+    print_fn('{}'.format('-' * 50))
 
     kwargs = {'data': data,
               'cv_method': cv_method,
@@ -144,8 +161,7 @@ def run(args):
 
 def main(args):
     args = parse_args(args)
-    args = vars(args)
-    ret = run(args)
+    run(args)
 
 
 if __name__ == '__main__':
