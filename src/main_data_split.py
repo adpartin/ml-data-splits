@@ -126,7 +126,6 @@ def run(args):
     print_fn('\nLoad master dataset.')
     data = load_data(datapath)
     print_fn('data.shape {}'.format(data.shape))
-    print_fn('Total mod: {}'.format( len([c for c in data.columns if 'mod.' in c]) ))
 
     ydata = data[trg_name] if trg_name in data.columns else None
     if (ydata is None) and (cv_method == 'strat'):
