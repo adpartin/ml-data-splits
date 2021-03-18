@@ -60,11 +60,11 @@ def data_splitter( n_splits=1, gout=None, outfigs=None, ydata=None,
                        fmt='%d', delimiter='', newline='\n')
 
         if (ydata is not None) and (outfigs is not None):
-            plot_hist(ydata, title='Train Set Histogram',
+            plot_hist(ydata[tr_id], title='Train Set Histogram',
                       fit=None, bins=100, path=outfigs/f'{output}_y_hist_train.png')
-            plot_hist(ydata, title='Val Set Histogram',
+            plot_hist(ydata[vl_id], title='Val Set Histogram',
                       fit=None, bins=100, path=outfigs/f'{output}_y_hist_val.png')
-            plot_hist(ydata, title='Test Set Histogram',
+            plot_hist(ydata[te_id], title='Test Set Histogram',
                       fit=None, bins=100, path=outfigs/f'{output}_y_hist_test.png')
     return (tr_dct, vl_dct, te_dct)
 
