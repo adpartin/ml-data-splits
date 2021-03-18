@@ -52,11 +52,11 @@ def data_splitter( n_splits=1, gout=None, outfigs=None, ydata=None,
         output = '1fold_s' + seed_str
 
         if gout is not None:
-            np.savetxt(gout/f'{output}_tr_id.csv', tr_id.reshape(-1, 1),
+            np.savetxt(gout/f'{output}_tr_id.txt', tr_id.reshape(-1, 1),
                        fmt='%d', delimiter='', newline='\n')
-            np.savetxt(gout/f'{output}_vl_id.csv', vl_id.reshape(-1, 1),
+            np.savetxt(gout/f'{output}_vl_id.txt', vl_id.reshape(-1, 1),
                        fmt='%d', delimiter='', newline='\n')
-            np.savetxt(gout/f'{output}_te_id.csv', te_id.reshape(-1, 1),
+            np.savetxt(gout/f'{output}_te_id.txt', te_id.reshape(-1, 1),
                        fmt='%d', delimiter='', newline='\n')
 
         if (ydata is not None) and (outfigs is not None):
